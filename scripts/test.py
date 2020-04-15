@@ -9,6 +9,8 @@ import tempfile
 WINDOWS = sys.platform.startswith('win')
 MACOS = sys.platform == 'darwin'
 
+assert 'EM_CONFIG' in os.environ
+
 upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
 fastcomp_emcc = os.path.join('fastcomp', 'emscripten', 'emcc')
 emsdk = './emsdk'
@@ -16,8 +18,6 @@ if WINDOWS:
   upstream_emcc += '.bat'
   fastcomp_emcc += '.bat'
   emsdk = 'emsdk.bat'
-else:
-  emsdk = './emsdk'
 
 # Utilities
 
@@ -76,13 +76,13 @@ int main() {
 
 TAGS = json.loads(open('emscripten-releases-tags.txt').read())
 
-LIBC = os.path.expanduser('~/.emscripten_cache/wasm/libc.a')
+LIBC = '.emscripten_cache/wasm/libc.a'
 
 # Tests
 
 print('test .emscripten contents (latest was installed/activated in test.sh)')
-assert 'fastcomp' not in open(os.path.expanduser('~/.emscripten')).read()
-assert 'upstream' in open(os.path.expanduser('~/.emscripten')).read()
+assert 'fastcomp' not in open('.emscripten').read()
+assert 'upstream' in open('.emscripten').read()
 
 # Test we don't re-download unnecessarily
 checked_call_with_output(emsdk + ' install latest', expected='already installed', unexpected='Downloading:')
@@ -134,9 +134,9 @@ run_emsdk('install latest-fastcomp')
 run_emsdk('activate latest-fastcomp')
 
 test_lib_building(fastcomp_emcc, use_asmjs_optimizer=False)
-assert open(os.path.expanduser('~/.emscripten')).read().count('LLVM_ROOT') == 1
-assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
-assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
+assert open('.emscripten').read().count('LLVM_ROOT') == 1
+assert 'upstream' not in open('.emscripten').read()
+assert 'fastcomp' in open('.emscripten').read()
 
 print('verify version')
 checked_call_with_output(fastcomp_emcc + ' -v', TAGS['latest'], stderr=subprocess.STDOUT)
@@ -154,9 +154,9 @@ checked_call_with_output(emsdk + ' install node-12.9.1-64bit', unexpected='Downl
 print('test tot-upstream')
 run_emsdk('install tot-upstream')
 assert not os.path.exists(LIBC)
-old_config = open(os.path.expanduser('~/.emscripten')).read()
+old_config = open('.emscripten').read()
 run_emsdk('activate tot-upstream')
-assert old_config == open(os.path.expanduser('~/.emscripten.old')).read()
+assert old_config == open('.emscripten.old').read()
 # TODO; test on latest as well
 assert os.path.exists(LIBC), 'activation supplies prebuilt libc'
 check_call(upstream_emcc + ' hello_world.c')
@@ -175,8 +175,8 @@ run_emsdk('install 1.38.33')
 print('another install, but no need for re-download')
 checked_call_with_output(emsdk + ' install 1.38.33', expected='Skipped', unexpected='Downloading:')
 run_emsdk('activate 1.38.33')
-assert 'upstream' not in open(os.path.expanduser('~/.emscripten')).read()
-assert 'fastcomp' in open(os.path.expanduser('~/.emscripten')).read()
+assert 'upstream' not in open('.emscripten').read()
+assert 'fastcomp' in open('.emscripten').read()
 
 print('test specific release (new, full name)')
 run_emsdk('install sdk-1.38.33-upstream-64bit')
