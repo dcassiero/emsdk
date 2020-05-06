@@ -9,8 +9,6 @@ import tempfile
 WINDOWS = sys.platform.startswith('win')
 MACOS = sys.platform == 'darwin'
 
-assert 'EM_CONFIG' in os.environ
-
 upstream_emcc = os.path.join('upstream', 'emscripten', 'emcc')
 fastcomp_emcc = os.path.join('fastcomp', 'emscripten', 'emcc')
 emsdk = './emsdk'
